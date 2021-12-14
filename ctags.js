@@ -1,7 +1,14 @@
+const iVersion = require('./version');
+const iHelp = require('./help');
+
 function usage () {
+   console.log(iHelp.usage);
+   process.exit(1);
 }
 
 function version() {
+   console.log(`Ctags-JS ${iVersion.version}`);
+   process.exit(1);
 }
 
 function parseArgs() {
@@ -32,11 +39,9 @@ function parseArgs() {
          break;
       case '-v': case '--version':
          version();
-         prcess.exit(1);
          break;
       case '-h': case '--help':
          usage();
-         prcess.exit(1);
          break;
       default:
          opt.inputs.push(arg);
