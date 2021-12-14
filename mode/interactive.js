@@ -5,12 +5,13 @@
    - common { _type, name, version }
    - compelete +{ command }
    - error +{ message, fatal }
-   - token +{ path, language, lie, kind, end, scope, scopeKind, access, file, signature, pattern }
+   - token +{ path, language, line, kind, end, scope, scopeKind, access, file, signature, pattern }
  */
 
 const readline = require('readline');
 const iVersion = require('../version');
 const iTask = require('../util/task');
+const iLazac = require('../lazac');
 
 const nop = () => {};
 const runner = new iTask.TaskRunner();
@@ -63,8 +64,19 @@ function bootstrap (opt) {
 }
 
 async function generateTags(obj) {
-   const filename = obj.filename;
-   // _type, name, path, pattern, kind, scope, scopeKind
+   /*
+      in zoekt,
+         _type, name, line, path, kind, scope, scopeKind,
+         language, pattern, signature
+      are used; but only name, language and line are used for indexing
+      ref: https://github.com/sourcegraph/go-ctags/blob/main/ctags.go#L19
+      ref: https://github.com/sourcegraph/zoekt/blob/master/build/ctags.go#L210
+
+      moreover, now go-enry is used to replace ctags language field
+      ref: https://github.com/sourcegraph/zoekt/commit/d86fb30b50bafb17dec50c2fa5f74ac285e14b16
+      ref: https://github.com/sourcegraph/zoekt/blob/master/indexbuilder.go#L436
+    */
+   await iLazac.ParseFile(obj.filename);
    out({
       _type: "completed",
       command: obj.command,

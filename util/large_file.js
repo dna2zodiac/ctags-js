@@ -51,7 +51,7 @@ class LineReader {
          // TODO: deal with too long line
          //       if change `if` to `while`,
          //       do N times to allow cache size * N length line
-         return Promise.reject('too long line');
+         return Promise.reject('tooLongLine');
       }
       return Promise.resolve(this.cache.shift());
    }
