@@ -8,10 +8,16 @@
    - token +{ path, language, lie, kind, end, scope, scopeKind, access, file, signature, pattern }
  */
 
+const readline = require('readline');
 const iVersion = require('../version');
+const iTask = require('../util/task');
+
+const nop = () => {};
+const runner = new iTask.TaskRunner();
 
 function bootstrap (opt) {
-   const readline = require('readline');
+   runner.Register('generate-tags', generateTags);
+
    const rl = readline.createInterface({
       input: process.stdin,
       output: process.stdout,
@@ -19,9 +25,34 @@ function bootstrap (opt) {
    });
    rl.on('line', async (line) => {
       try {
-         dispatch(JSON.parse(line));
+         out({
+            _type: "program",
+            name: "Ctags-JS",
+            version: iVersion.version,
+         });
+         const json = JSON.parse(line);
+         runner.Push(json.command, json).then(nop, (err) => {
+            if (err === 'NoSupportedRunner') {
+               out({
+                  _type: "error",
+                  message: `Unknow Command (${json.command})`,
+                  fatal: false,
+               });
+            } else {
+               out({
+                  _type: "error",
+                  message: `Unexpected Error (${err})`,
+                  fatal: false,
+               });
+            }
+         }).catch((err) => {
+            out({
+               _type: "error",
+               message: `Unexpected Error (catch: ${err})`,
+               fatal: false,
+            });
+         });
       } catch(err) {
-         // TODO: deal with dispatch can throw errors
          out({
             _type: "error",
             message: "Invalid Json",
@@ -31,28 +62,8 @@ function bootstrap (opt) {
    });
 }
 
-function dispatch(json) {
-   const cmd = json.command;
-   switch (cmd) {
-   case 'generate-tags':
-      generateTags(json);
-      break;
-   default:
-      out({
-         _type: "error",
-         message: `Unknow Command (${cmd})`,
-         fatal: false,
-      });
-   }
-}
-
-function generateTags(obj) {
+async function generateTags(obj) {
    const filename = obj.filename;
-   out({
-      _type: "program",
-      name: "Ctags-JS",
-      version: iVersion.version,
-   });
    // _type, name, path, pattern, kind, scope, scopeKind
    out({
       _type: "completed",
