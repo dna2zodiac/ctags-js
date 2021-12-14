@@ -1,0 +1,4 @@
+#!/bin/bash
+
+SELF=$(cd `dirname $0`; pwd)
+node $SELF/ctags.js $@
